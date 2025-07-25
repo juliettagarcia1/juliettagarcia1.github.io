@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My AI Chatbot</title>
+  </head>
+  <body>
+    <h1>Email & Calendar Assistant</h1>
+    <form id="chatForm">
+      <label>Email Topic:</label><br>
+      <textarea id="userPrompt" rows="4" cols="60"></textarea><br>
+
+      <label>Recipient Email:</label><br>
+      <input id="emailTo" type="email"><br>
+
+      <label>Preferred Time (optional):</label><br>
+      <input id="preferredTime" type="text" placeholder="e.g., July 25 at 3pm"><br>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="responseArea"></div>
+
+    <script>
+      const form = document.getElementById("chatForm");
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const prompt = document.getElementById("userPrompt").value;
+        const email = document.getElementById("emailTo").value;
+        const time = document.getElementById("preferredTime").value;
+
+        const res = await fetch("https://YOUR_PIPEDREAM_WEBHOOK_URL", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, email, time })
+        });
+
+        const data = await res.json();
+        document.getElementById("responseArea").innerText = data.response;
+      };
+    </script>
+  </body>
+</html>
