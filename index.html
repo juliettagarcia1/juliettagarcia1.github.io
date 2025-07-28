@@ -28,7 +28,7 @@
         const email = document.getElementById("emailTo").value;
         const time = document.getElementById("preferredTime").value;
 
-        const res = await fetch("https://YOUR_PIPEDREAM_WEBHOOK_URL", {
+        const res = await fetch("https://eohvq9npo15bpwz.m.pipedream.net", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt, email, time })
