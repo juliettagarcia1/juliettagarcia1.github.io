@@ -85,7 +85,7 @@
           recipientEmail = userMessage;
           appendBot("Generating your email...");
 
-          const response = await fetch("https://YOUR_PIPEDREAM_WEBHOOK_URL", {
+          const response = await fetch("https://eohvq9npo15bpwz.m.pipedream.net", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ prompt: emailTopic, email: recipientEmail })
