@@ -93,7 +93,7 @@
 
           const data = await response.json();
           appendBot("Here’s your email draft:");
-          appendBot(`<i>${data.response}</i>`);
+          appendBot(`<i>${data.emailBody}</i>`);
           appendBot("Would you like me to send it? (yes/no)");
           step++;
         } else if (step === 2) {
