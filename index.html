@@ -3,13 +3,14 @@
 <head>
   <title>Email Assistant Chat</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
     #chatbox { border: 1px solid #ccc; padding: 10px; width: 100%; max-width: 600px; height: 400px; overflow-y: auto; margin-bottom: 10px; }
-    .user { text-align: right; }
-    .bot { text-align: left; }
-    .msg { margin: 5px 0; }
+    .user { text-align: right; font-weight: bold; }
+    .bot { text-align: left; font-style: italic; }
+    .msg { margin: 5px 0; white-space: pre-wrap; }
     #inputArea { display: flex; gap: 10px; }
     input[type="text"] { flex: 1; padding: 8px; }
+    button { padding: 8px 12px; }
   </style>
 </head>
 <body>
@@ -21,76 +22,89 @@
   </div>
 
   <script>
-    <script>
-  let stage = 0;
-  let emailDraft = "";
-  let userData = {};
+    let stage = 0;
+    let emailDraft = "";
+    let userData = {};
 
-  function appendMessage(text, sender = 'bot') {
-    const chatbox = document.getElementById('chatbox');
-    const div = document.createElement('div');
-    div.className = `msg ${sender}`;
-    div.textContent = text;
-    chatbox.appendChild(div);
-    chatbox.scrollTop = chatbox.scrollHeight;
-  }
+    function appendMessage(text, sender = 'bot') {
+      const chatbox = document.getElementById('chatbox');
+      const div = document.createElement('div');
+      div.className = `msg ${sender}`;
+      div.textContent = text;
+      chatbox.appendChild(div);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
 
-  function sendMessage() {
-    const input = document.getElementById('input');
-    const text = input.value.trim();
-    if (!text) return;
+    function sendMessage() {
+      const input = document.getElementById('input');
+      const text = input.value.trim();
+      if (!text) return;
+      appendMessage(text, 'user');
+      input.value = '';
+      handleConversation(text);
+    }
 
-    appendMessage(text, 'user');
-    input.value = '';
-    handleConversation(text);
-  }
+    async function handleConversation(userMsg) {
+      try {
+        if (stage === 0) {
+          appendMessage("Who is the recipient of your email?");
+          stage = 1;
+        } else if (stage === 1) {
+          userData.name = userMsg;
+          appendMessage("What is the recipient's email?");
+          stage = 2;
+        } else if (stage === 2) {
+          userData.email = userMsg;
+          appendMessage("What is the topic of the email?");
+          stage = 3;
+        } else if (stage === 3) {
+          userData.topic = userMsg;
+          appendMessage("Generating your email...");
 
-  async function handleConversation(userMsg) {
-    if (stage === 0) {
-      appendMessage("Who is the recipient of your email?");
-      stage = 1;
-    } else if (stage === 1) {
-      userData.name = userMsg;
-      appendMessage("What is the recipient's email?");
-      stage = 2;
-    } else if (stage === 2) {
-      userData.email = userMsg;
-      appendMessage("What is the topic of the email?");
-      stage = 3;
-    } else if (stage === 3) {
-      userData.topic = userMsg;
-      appendMessage("Generating your email...");
-      const res = await fetch('https://eo4dbpcdj6t17aj.m.pipedream.net', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData)
-      });
-      const data = await res.json();
-      emailDraft = data.generated_email;
-      appendMessage("Here's the drafted email:\n\n" + emailDraft);
-      appendMessage("Would you like to send this email? (yes or no)");
-      stage = 4;
-    } else if (stage === 4) {
-      if (userMsg.toLowerCase() === 'yes') {
-        appendMessage("Sending your email...");
-        const res = await fetch('https://eol63usb1p539th.m.pipedream.net', {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...userData, body: emailDraft })
-        });
-        const result = await res.json();
-        appendMessage(result.message || "Email sent successfully.");
-        stage = 5;
-      } else {
-        appendMessage("Okay, the email was not sent.");
-        stage = 5;
+          const res = await fetch('https://eo4dbpcdj6t17aj.m.pipedream.net', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(userData)
+          });
+
+          const data = await res.json();
+          if (!data.generated_email) {
+            appendMessage("❌ Failed to generate email.");
+            return;
+          }
+
+          emailDraft = data.generated_email;
+          appendMessage("Here's the drafted email:\n\n" + emailDraft);
+          appendMessage("Would you like to send this email? (yes or no)");
+          stage = 4;
+        } else if (stage === 4) {
+          if (userMsg.toLowerCase() === 'yes') {
+            appendMessage("Sending your email...");
+
+            const res = await fetch('https://eol63usb1p539th.m.pipedream.net', {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ...userData, body: emailDraft })
+            });
+
+            const result = await res.json();
+            appendMessage(result.message || "✅ Email sent.");
+            stage = 5;
+          } else {
+            appendMessage("Okay, the email was not sent.");
+            stage = 5;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        appendMessage("⚠️ An error occurred. Please try again or check your webhook.");
       }
     }
-  }
 
-  //Force the assistant to speak immediately on page load
-  window.onload = () => {
-    appendMessage("Hi! I'm your email assistant. Let's get started.");
-    setTimeout(() => handleConversation(""), 100);  // small delay ensures chat renders first
-  };
-</script>
+    window.onload = () => {
+      appendMessage("Hi! I'm your email assistant. Let's get started.");
+      setTimeout(() => handleConversation(""), 100);
+    };
+  </script>
+</body>
+</html>
