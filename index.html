@@ -21,75 +21,76 @@
   </div>
 
   <script>
-    let chat = [];
-    let stage = 0;
-    let emailDraft = "";
-    let userData = {};
+    <script>
+  let stage = 0;
+  let emailDraft = "";
+  let userData = {};
 
-    function appendMessage(text, sender = 'bot') {
-      const chatbox = document.getElementById('chatbox');
-      const div = document.createElement('div');
-      div.className = `msg ${sender}`;
-      div.textContent = text;
-      chatbox.appendChild(div);
-      chatbox.scrollTop = chatbox.scrollHeight;
-    }
+  function appendMessage(text, sender = 'bot') {
+    const chatbox = document.getElementById('chatbox');
+    const div = document.createElement('div');
+    div.className = `msg ${sender}`;
+    div.textContent = text;
+    chatbox.appendChild(div);
+    chatbox.scrollTop = chatbox.scrollHeight;
+  }
 
-    function sendMessage() {
-      const input = document.getElementById('input');
-      const text = input.value.trim();
-      if (!text) return;
+  function sendMessage() {
+    const input = document.getElementById('input');
+    const text = input.value.trim();
+    if (!text) return;
 
-      appendMessage(text, 'user');
-      input.value = '';
-      handleConversation(text);
-    }
+    appendMessage(text, 'user');
+    input.value = '';
+    handleConversation(text);
+  }
 
-    async function handleConversation(userMsg) {
-      if (stage === 0) {
-        appendMessage("Who is the recipient of your email?");
-        stage = 1;
-      } else if (stage === 1) {
-        userData.name = userMsg;
-        appendMessage("What is the recipient's email?");
-        stage = 2;
-      } else if (stage === 2) {
-        userData.email = userMsg;
-        appendMessage("What is the topic of the email?");
-        stage = 3;
-      } else if (stage === 3) {
-        userData.topic = userMsg;
-        appendMessage("Generating your email...");
-        const res = await fetch('https://eo4dbpcdj6t17aj.m.pipedream.net', {
+  async function handleConversation(userMsg) {
+    if (stage === 0) {
+      appendMessage("Who is the recipient of your email?");
+      stage = 1;
+    } else if (stage === 1) {
+      userData.name = userMsg;
+      appendMessage("What is the recipient's email?");
+      stage = 2;
+    } else if (stage === 2) {
+      userData.email = userMsg;
+      appendMessage("What is the topic of the email?");
+      stage = 3;
+    } else if (stage === 3) {
+      userData.topic = userMsg;
+      appendMessage("Generating your email...");
+      const res = await fetch('https://eol63usb1p539th.m.pipedream.net', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData)
+      });
+      const data = await res.json();
+      emailDraft = data.generated_email;
+      appendMessage("Here's the drafted email:\n\n" + emailDraft);
+      appendMessage("Would you like to send this email? (yes or no)");
+      stage = 4;
+    } else if (stage === 4) {
+      if (userMsg.toLowerCase() === 'yes') {
+        appendMessage("Sending your email...");
+        const res = await fetch('https://eol63usb1p539th.m.pipedream.net', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userData)
+          body: JSON.stringify({ ...userData, body: emailDraft })
         });
-        const data = await res.json();
-        emailDraft = data.generated_email;
-        appendMessage("Here's the drafted email:\n\n" + emailDraft);
-        appendMessage("Would you like to send this email? (yes or no)");
-        stage = 4;
-      } else if (stage === 4) {
-        if (userMsg.toLowerCase() === 'yes') {
-          appendMessage("Sending your email...");
-          const res = await fetch('https://eol63usb1p539th.m.pipedream.net', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...userData, body: emailDraft })
-          });
-          const result = await res.json();
-          appendMessage(result.message || "Email sent successfully.");
-          stage = 5;
-        } else {
-          appendMessage("Okay, the email was not sent.");
-          stage = 5;
-        }
+        const result = await res.json();
+        appendMessage(result.message || "Email sent successfully.");
+        stage = 5;
+      } else {
+        appendMessage("Okay, the email was not sent.");
+        stage = 5;
       }
     }
+  }
 
-    // Start the conversation
-    window.onload = () => {
-  appendMessage("Hi! I'm your email assistant. Let's get started.");
-  handleConversation("");  // ✅ simulate blank message to trigger stage 0
-};
+  //Force the assistant to speak immediately on page load
+  window.onload = () => {
+    appendMessage("Hi! I'm your email assistant. Let's get started.");
+    setTimeout(() => handleConversation(""), 100);  // small delay ensures chat renders first
+  };
+</script>
