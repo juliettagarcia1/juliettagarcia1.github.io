@@ -1,126 +1,81 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>AI Email Chatbot</title>
-    <meta charset="UTF-8" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        padding: 40px;
-        background-color: #f5f5f5;
-      }
-      #chatBox {
-        max-width: 600px;
-        margin: auto;
-        padding: 20px;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-      }
-      #chatLog {
-        min-height: 200px;
-        margin-bottom: 10px;
-      }
-      .bot {
-        text-align: left;
-        margin: 6px 0;
-      }
-      .user {
-        text-align: right;
-        margin: 6px 0;
-      }
-      #chatInput {
-        width: 80%;
-        padding: 8px;
-      }
-      #sendBtn {
-        width: 18%;
-        padding: 8px;
-      }
-    </style>
-  </head>
+<script>
+  let step = 0;
+  let emailTopic = "";
+  let recipientName = "";
+  let recipientEmail = "";
 
-  <body>
-    <h2 style="text-align:center;">AI Email Chatbot</h2>
-    <div id="chatBox">
-      <div id="chatLog"></div>
-      <input id="chatInput" type="text" placeholder="Type your response..." />
-      <button id="sendBtn" onclick="handleChat()">Send</button>
-    </div>
+  const chatLog = document.getElementById("chatLog");
+  const chatInput = document.getElementById("chatInput");
 
-    <script>
-      let step = 0;
-      let emailTopic = "";
-      let recipientEmail = "";
+  window.onload = () => {
+    appendBot("Hi! Who is the email for? (Full name)");
+  };
 
-      const chatLog = document.getElementById("chatLog");
-      const chatInput = document.getElementById("chatInput");
-
-      window.onload = () => {
-        appendBot("Hi! What should the email be about?");
-      };
-
-      function appendBot(text) {
-        chatLog.innerHTML += `<p class="bot"><strong>Bot:</strong> ${text}</p>`;
-        chatLog.scrollTop = chatLog.scrollHeight;
-      }
-
-      function appendUser(text) {
-        chatLog.innerHTML += `<p class="user"><strong>You:</strong> ${text}</p>`;
-        chatLog.scrollTop = chatLog.scrollHeight;
-      }
-
-      async function handleChat() {
-        let step = 0;
-let emailTopic = "";
-let recipientName = "";
-let recipientEmail = "";
-
-async function handleChat() {
-  const userMessage = chatInput.value.trim();
-  if (!userMessage) return;
-
-  appendUser(userMessage);
-  chatInput.value = "";
-
-  if (step === 0) {
-    emailTopic = userMessage;
-    appendBot("Who is the email for? (Full name)");
-    step++;
-  } else if (step === 1) {
-    recipientName = userMessage;
-    appendBot("What is their email address?");
-    step++;
-  } else if (step === 2) {
-    recipientEmail = userMessage;
-    appendBot("Generating your email...");
-
-    const response = await fetch("https://eohvq9npo15bpwz.m.pipedream.net", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt: emailTopic,
-        name: recipientName,
-        email: recipientEmail
-      })
-    });
-
-    const data = await response.json();
-    appendBot("Here's your email draft:");
-    appendBot(`<i>${data.emailBody}</i>`);
-    appendBot("Would you like me to send it? (yes/no)");
-    step++;
-  } else if (step === 3) {
-    if (userMessage.toLowerCase().includes("yes")) {
-      appendBot("✅ Email sent!");
-    } else {
-      appendBot("No problem! Let me know if you'd like to revise or resend.");
-    }
-    step = 4; // end of flow
+  function appendBot(text) {
+    chatLog.innerHTML += `<p class="bot"><strong>Bot:</strong> ${text}</p>`;
+    chatLog.scrollTop = chatLog.scrollHeight;
   }
-}      
+
+  function appendUser(text) {
+    chatLog.innerHTML += `<p class="user"><strong>You:</strong> ${text}</p>`;
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  async function handleChat() {
+    const userMessage = chatInput.value.trim();
+    if (!userMessage) return;
+
+    appendUser(userMessage);
+    chatInput.value = "";
+
+    if (step === 0) {
+      recipientName = userMessage;
+      appendBot("What should the email be about?");
+      step++;
+    } else if (step === 1) {
+      emailTopic = userMessage;
+      appendBot("What is the recipient's email address?");
+      step++;
+    } else if (step === 2) {
+      recipientEmail = userMessage;
+      appendBot("Generating your email...");
+
+      try {
+        const response = await fetch("https://eohvq9npo15bpwz.m.pipedream.net", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: emailTopic,
+            name: recipientName,
+            email: recipientEmail
+          })
+        });
+
+        const data = await response.json();
+        console.log("Pipedream response:", data);
+
+        if (data && data.emailBody) {
+          appendBot("Here's your email draft:");
+          appendBot(`<i>${data.emailBody}</i>`);
+          appendBot("Would you like me to send it? (yes/no)");
+          step++;
+        } else {
+          appendBot("⚠️ I couldn’t generate the email. Please try again.");
         }
+
+      } catch (err) {
+        console.error("Fetch failed:", err);
+        appendBot("⚠️ There was an error connecting to the AI. Please try again.");
       }
-    </script>
-  </body>
-</html>
+
+    } else if (step === 3) {
+      if (userMessage.toLowerCase().includes("yes")) {
+        appendBot("✅ Email sent!");
+      } else {
+        appendBot("No problem! Let me know if you'd like to revise or resend.");
+      }
+      step = 4;
+    }
+  }
+</script>
+
