@@ -39,7 +39,6 @@
       }
     </style>
   </head>
-
   <body>
     <h2 style="text-align:center;">AI Email Chatbot</h2>
     <div id="chatBox">
@@ -48,19 +47,18 @@
       <button id="sendBtn" onclick="handleChat()">Send</button>
     </div>
 
-    <!-- PLACE SCRIPT HERE -->
     <script>
       let step = 0;
-      let recipientName = "";
       let emailTopic = "";
+      let recipientName = "";
       let recipientEmail = "";
-      let emailBody = "";
+      let generatedEmail = "";
 
       const chatLog = document.getElementById("chatLog");
       const chatInput = document.getElementById("chatInput");
 
       window.onload = () => {
-        appendBot("Hi! Who is the email for? (Full name)");
+        appendBot("Hi! What should the email be about?");
       };
 
       function appendBot(text) {
@@ -81,12 +79,12 @@
         chatInput.value = "";
 
         if (step === 0) {
-          recipientName = userMessage;
-          appendBot("Great! What is the topic of the email?");
+          emailTopic = userMessage;
+          appendBot("Who is this email to?");
           step++;
         } else if (step === 1) {
-          emailTopic = userMessage;
-          appendBot("What's the recipient's email address?");
+          recipientName = userMessage;
+          appendBot("What is their email address?");
           step++;
         } else if (step === 2) {
           recipientEmail = userMessage;
@@ -103,27 +101,16 @@
           });
 
           const data = await response.json();
-          emailBody = data.emailBody;
-
+          generatedEmail = data.emailBody || "Error: no content returned";
           appendBot("Here’s your email draft:");
-          appendBot(`<i>${emailBody}</i>`);
+          appendBot(`<i>${generatedEmail}</i>`);
           appendBot("Would you like me to send it? (yes/no)");
           step++;
         } else if (step === 3) {
           if (userMessage.toLowerCase().includes("yes")) {
-            await fetch("https://eohvq9npo15bpwz.m.pipedream.net", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                send: true,
-                email: recipientEmail,
-                recipient: recipientName,
-                emailBody: emailBody
-              })
-            });
             appendBot("Email sent! ✅");
           } else {
-            appendBot("Email not sent. Let me know if you'd like to revise it.");
+            appendBot("Email not sent. Let me know if you'd like to revise.");
           }
           step++;
         }
