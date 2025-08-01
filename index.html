@@ -1,58 +1,33 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>AI Email Chatbot</title>
-    <meta charset="UTF-8" />
-    <style>
-      body { font-family: Arial; background: #f5f5f5; padding: 40px; }
-      #chatBox { max-width: 600px; margin: auto; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 20px; }
-      .bot, .user { margin: 6px 0; }
-      .bot { text-align: left; }
-      .user { text-align: right; }
-      #chatInput { width: 80%; padding: 8px; }
-      #sendBtn { width: 18%; padding: 8px; }
-    </style>
-  </head>
-  <body>
-    <h2 style="text-align:center;">AI Email Chatbot</h2>
-    <div id="chatBox">
-      <div id="chatLog"></div>
-      <input id="chatInput" type="text" placeholder="Type your response..." />
-      <button id="sendBtn" onclick="handleChat()">Send</button>
-    </div>
-    <script>
-      let step = 0;
-      let emailTopic = "", recipientName = "", recipientEmail = "";
-      let chatLog = document.getElementById("chatLog"), chatInput = document.getElementById("chatInput");
+<head>
+  <title>My Chatbot</title>
+</head>
+<body>
+  <h1>Chat with My AI Assistant</h1>
+  <form id="chatForm">
+    <label>Topic: <input type="text" id="topic" /></label><br>
+    <label>Recipient Name: <input type="text" id="name" /></label><br>
+    <label>Email: <input type="email" id="email" /></label><br>
+    <button type="submit">Send Email via AI</button>
+  </form>
+  <div id="responseBox"></div>
 
-      function appendBot(text) { chatLog.innerHTML += `<p class="bot"><strong>Bot:</strong> ${text}</p>`; }
-      function appendUser(text) { chatLog.innerHTML += `<p class="user"><strong>You:</strong> ${text}</p>`; }
-      window.onload = () => { appendBot("Hi! What should the email be about?"); };
-
-      async function handleChat() {
-        let userMessage = chatInput.value.trim(); if (!userMessage) return;
-        appendUser(userMessage); chatInput.value = "";
-
-        if (step === 0) { emailTopic = userMessage; appendBot("Who is this email to?"); step++; }
-        else if (step === 1) { recipientName = userMessage; appendBot("What is their email address?"); step++; }
-        else if (step === 2) {
-          recipientEmail = userMessage; appendBot("Generating your email...");
-          const response = await fetch("YOUR_WEBHOOK_URL", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: emailTopic, recipient: recipientName, email: recipientEmail })
-          });
-          const data = await response.json();
-          appendBot("Here's your email draft:");
-          appendBot(`<i>${data.emailBody}</i>`);
-          appendBot("Would you like me to send it? (yes/no)");
-          step++;
-        }
-        else if (step === 3) {
-          if (userMessage.toLowerCase().includes("yes")) { appendBot("✅ Email sent!"); }
-          else { appendBot("Email not sent."); }
-        }
-      }
-    </script>
-  </body>
+  <script>
+    document.getElementById("chatForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const res = await fetch("YOUR_PIPEDREAM_WEBHOOK_URL", {
+        method: "POST",
+        body: JSON.stringify({
+          topic: document.getElementById("topic").value,
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value
+        }),
+        headers: { "Content-Type": "application/json" }
+      });
+      const text = await res.text();
+      document.getElementById("responseBox").innerText = text;
+    });
+  </script>
+</body>
 </html>
