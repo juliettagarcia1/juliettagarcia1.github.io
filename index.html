@@ -60,7 +60,7 @@
       } else if (stage === 3) {
         userData.topic = userMsg;
         appendMessage("Generating your email...");
-        const res = await fetch('https://eo76tcin6mnfoif.m.pipedream.net', {
+        const res = await fetch('https://eo4dbpcdj6t17aj.m.pipedream.net', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(userData)
@@ -73,7 +73,7 @@
       } else if (stage === 4) {
         if (userMsg.toLowerCase() === 'yes') {
           appendMessage("Sending your email...");
-          const res = await fetch('https://eo76tcin6mnfoif.m.pipedream.net', {
+          const res = await fetch('https://eo4dbpcdj6t17aj.m.pipedream.net', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ...userData, body: emailDraft })
