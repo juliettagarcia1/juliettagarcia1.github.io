@@ -92,10 +92,17 @@
           });
 
           const data = await response.json();
-          appendBot("Here’s your email draft:");
-          appendBot(`<i>${data.emailBody}</i>`);
-          appendBot("Would you like me to send it? (yes/no)");
-          step++;
+console.log("Pipedream response:", data); // for debugging
+
+if (data && data.emailBody) {
+  appendBot("Here’s your email draft:");
+  appendBot(`<i>${data.emailBody}</i>`);
+  appendBot("Would you like me to send it? (yes/no)");
+  step++;
+} else {
+  appendBot("⚠️ I couldn’t generate the email. Please try again.");
+}
+
         } else if (step === 2) {
           if (userMessage.toLowerCase().includes("yes")) {
             appendBot("Email sent! ✅");
