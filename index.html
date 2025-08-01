@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Chatbot</title>
+  <title>AI Email Bot</title>
 </head>
 <body>
-  <h1>Chat with My AI Assistant</h1>
+  <h2>Email Generator</h2>
   <form id="chatForm">
     <label>Topic: <input type="text" id="topic" /></label><br>
     <label>Recipient Name: <input type="text" id="name" /></label><br>
     <label>Email: <input type="email" id="email" /></label><br>
-    <button type="submit">Send Email via AI</button>
+    <button type="submit">Submit</button>
   </form>
+
   <div id="responseBox"></div>
 
   <script>
     document.getElementById("chatForm").addEventListener("submit", async function(e) {
       e.preventDefault();
-      const res = await fetch("YOUR_PIPEDREAM_WEBHOOK_URL", {
+      const response = await fetch("YOUR_PIPEDREAM_WEBHOOK_URL", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           topic: document.getElementById("topic").value,
           name: document.getElementById("name").value,
           email: document.getElementById("email").value
-        }),
-        headers: { "Content-Type": "application/json" }
+        })
       });
-      const text = await res.text();
-      document.getElementById("responseBox").innerText = text;
+      const result = await response.text();
+      document.getElementById("responseBox").innerText = result;
     });
   </script>
 </body>
