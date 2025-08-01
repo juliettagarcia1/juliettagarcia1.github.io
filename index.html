@@ -68,6 +68,7 @@
           });
 
           const data = await res.json();
+          console.log("📦 Response from webhook:", data);
           if (!data.generated_email) {
             appendMessage("❌ Failed to generate email.");
             return;
