@@ -71,45 +71,54 @@
       }
 
       async function handleChat() {
-        const userMessage = chatInput.value.trim();
-        if (!userMessage) return;
+        let step = 0;
+let emailTopic = "";
+let recipientName = "";
+let recipientEmail = "";
 
-        appendUser(userMessage);
-        chatInput.value = "";
+async function handleChat() {
+  const userMessage = chatInput.value.trim();
+  if (!userMessage) return;
 
-        if (step === 0) {
-          emailTopic = userMessage;
-          appendBot("Got it! Who should I send this email to?");
-          step++;
-        } else if (step === 1) {
-          recipientEmail = userMessage;
-          appendBot("Generating your email...");
+  appendUser(userMessage);
+  chatInput.value = "";
 
-          const response = await fetch("https://eohvq9npo15bpwz.m.pipedream.net", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: emailTopic, email: recipientEmail })
-          });
+  if (step === 0) {
+    emailTopic = userMessage;
+    appendBot("Who is the email for? (Full name)");
+    step++;
+  } else if (step === 1) {
+    recipientName = userMessage;
+    appendBot("What is their email address?");
+    step++;
+  } else if (step === 2) {
+    recipientEmail = userMessage;
+    appendBot("Generating your email...");
 
-          const data = await response.json();
-console.log("Pipedream response:", data); // for debugging
+    const response = await fetch("https://eohvq9npo15bpwz.m.pipedream.net", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: emailTopic,
+        name: recipientName,
+        email: recipientEmail
+      })
+    });
 
-if (data && data.emailBody) {
-  appendBot("Here’s your email draft:");
-  appendBot(`<i>${data.emailBody}</i>`);
-  appendBot("Would you like me to send it? (yes/no)");
-  step++;
-} else {
-  appendBot("⚠️ I couldn’t generate the email. Please try again.");
-}
-
-        } else if (step === 2) {
-          if (userMessage.toLowerCase().includes("yes")) {
-            appendBot("Email sent! ✅");
-          } else {
-            appendBot("Email not sent. Let me know if you'd like to change anything.");
-          }
-          step = 3;
+    const data = await response.json();
+    appendBot("Here's your email draft:");
+    appendBot(`<i>${data.emailBody}</i>`);
+    appendBot("Would you like me to send it? (yes/no)");
+    step++;
+  } else if (step === 3) {
+    if (userMessage.toLowerCase().includes("yes")) {
+      appendBot("✅ Email sent!");
+    } else {
+      appendBot("No problem! Let me know if you'd like to revise or resend.");
+    }
+    step = 4; // end of flow
+  }
+}      
         }
       }
     </script>
