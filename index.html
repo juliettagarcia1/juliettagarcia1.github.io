@@ -61,23 +61,30 @@
           userData.topic = userMsg;
           appendMessage("Generating your email...");
 
-          const res = await fetch('https://eo4dbpcdj6t17aj.m.pipedream.net', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(userData)
-          });
+          try {
+            const res = await fetch('https://eo4dbpcdj6t17aj.m.pipedream.net', {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(userData)
+            });
 
-          const data = await res.json();
-          console.log("📦 Response from webhook:", data);
-          if (!data.generated_email) {
-            appendMessage("❌ Failed to generate email.");
-            return;
+            const data = await res.json();
+            console.log("📦 Webhook response:", data);  // <-- Debug line added
+
+            if (!data.generated_email) {
+              appendMessage("❌ Failed to generate email. Got empty response.");
+              return;
+            }
+
+            emailDraft = data.generated_email;
+            appendMessage("Here's the drafted email:\n\n" + emailDraft);
+            appendMessage("Would you like to send this email? (yes or no)");
+            stage = 4;
+
+          } catch (err) {
+            console.error("🚨 Error while generating email:", err);
+            appendMessage("⚠️ An error occurred. Please try again or check your webhook.");
           }
-
-          emailDraft = data.generated_email;
-          appendMessage("Here's the drafted email:\n\n" + emailDraft);
-          appendMessage("Would you like to send this email? (yes or no)");
-          stage = 4;
         } else if (stage === 4) {
           if (userMsg.toLowerCase() === 'yes') {
             appendMessage("Sending your email...");
@@ -97,7 +104,7 @@
           }
         }
       } catch (err) {
-        console.error(err);
+        console.error("🔥 Unhandled error:", err);
         appendMessage("⚠️ An error occurred. Please try again or check your webhook.");
       }
     }
@@ -109,3 +116,4 @@
   </script>
 </body>
 </html>
+
