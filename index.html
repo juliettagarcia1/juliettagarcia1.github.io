@@ -69,31 +69,30 @@
             });
 
             const raw = await res.text();
-            console.log("📦 Raw webhook response:", raw);
+            console.log("📦 Raw response:", raw);
 
-            let data;
-            try {
-              data = JSON.parse(raw);
-            } catch (e) {
-              console.error("❌ Failed to parse JSON from webhook:", e, raw);
-              appendMessage("❌ Error reading email response.");
-              return;
+            if (raw.trim().startsWith("{")) {
+              const data = JSON.parse(raw);
+              console.log("✅ Parsed data:", data);
+
+              if (!data.generated_email) {
+                appendMessage("❌ Failed to generate email. Response did not include email.");
+                return;
+              }
+
+              emailDraft = data.generated_email;
+              appendMessage("Here's the drafted email:\n\n" + emailDraft);
+              appendMessage("Would you like to send this email? (yes or no)");
+              stage = 4;
+            } else {
+              console.error("🚨 Response is not valid JSON:\n", raw);
+              appendMessage("❌ Received invalid data. Check your webhook.");
             }
-
-            if (!data.generated_email) {
-              appendMessage("❌ Failed to generate email. Got empty response.");
-              return;
-            }
-
-            emailDraft = data.generated_email;
-            appendMessage("Here's the drafted email:\n\n" + emailDraft);
-            appendMessage("Would you like to send this email? (yes or no)");
-            stage = 4;
-
           } catch (err) {
-            console.error("🚨 Error while generating email:", err);
+            console.error("🔥 Error while generating email:", err);
             appendMessage("⚠️ An error occurred. Please try again or check your webhook.");
           }
+
         } else if (stage === 4) {
           if (userMsg.toLowerCase() === 'yes') {
             appendMessage("Sending your email...");
@@ -125,4 +124,5 @@
   </script>
 </body>
 </html>
+
 
