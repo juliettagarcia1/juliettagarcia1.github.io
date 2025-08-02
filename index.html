@@ -80,7 +80,7 @@
                 return;
               }
 
-              emailDraft = data.generated_email;
+              emailDraft = JSON.parse(data.generated_email);
               appendMessage("Here's the drafted email:\n\n" + emailDraft);
               appendMessage("Would you like to send this email? (yes or no)");
               stage = 4;
