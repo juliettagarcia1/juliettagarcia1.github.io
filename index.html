@@ -23,7 +23,8 @@
 
   <script>
     let stage = 0;
-    let emailDraft = "";
+    let emailSubject = "";
+    let emailBody = "";
     let userData = {};
 
     function appendMessage(text, sender = 'bot') {
@@ -68,28 +69,20 @@
               body: JSON.stringify(userData)
             });
 
-            const raw = await res.text();
-            console.log("📦 Raw response:", raw);
+            const data = await res.json();
+            console.log("✅ Parsed JSON:", data);
 
-            if (raw.trim().startsWith("{")) {
-              const data = JSON.parse(raw);
-              console.log("✅ Parsed data:", data);
-
-              if (!data.generated_email) {
-                appendMessage("❌ Failed to generate email. Response did not include email.");
-                return;
-              }
-              
-              emailSubject = data.subject;
-              emailBody = data.body;
-              appendMessage("📧 Subject: " + emailSubject + "\n\n" + emailBody);
-
-              appendMessage("Would you like to send this email? (yes or no)");
-              stage = 4;
-            } else {
-              console.error("🚨 Response is not valid JSON:\n", raw);
-              appendMessage("❌ Received invalid data. Check your webhook.");
+            if (!data.subject || !data.body) {
+              appendMessage("❌ Failed to generate email. Missing subject or body.");
+              return;
             }
+
+            emailSubject = data.subject;
+            emailBody = data.body;
+
+            appendMessage("📧 Subject: " + emailSubject + "\n\n" + emailBody);
+            appendMessage("Would you like to send this email? (yes or no)");
+            stage = 4;
           } catch (err) {
             console.error("🔥 Error while generating email:", err);
             appendMessage("⚠️ An error occurred. Please try again or check your webhook.");
@@ -102,7 +95,11 @@
             const res = await fetch('https://eol63usb1p539th.m.pipedream.net', {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...userData, body: emailDraft })
+              body: JSON.stringify({
+                ...userData,
+                subject: emailSubject,
+                body: emailBody
+              })
             });
 
             const result = await res.json();
@@ -126,5 +123,3 @@
   </script>
 </body>
 </html>
-
-
