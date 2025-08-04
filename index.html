@@ -104,3 +104,23 @@
 
             const result = await res.json();
             appendMessage(result.message || "✅ Email sent.");
+            stage = 5;
+          } else {
+            appendMessage("Okay, the email was not sent.");
+            stage = 5;
+          }
+        }
+      } catch (err) {
+        console.error("🔥 Unhandled error:", err);
+        appendMessage("⚠️ An error occurred. Please try again or check your webhook.");
+      }
+    }
+
+    window.onload = () => {
+      appendMessage("Hi! I'm your email assistant. Let's get started.");
+      setTimeout(() => handleConversation(""), 100);
+    };
+  </script>
+</body>
+</html>
+
