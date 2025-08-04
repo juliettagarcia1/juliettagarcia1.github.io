@@ -79,12 +79,10 @@
                 appendMessage("❌ Failed to generate email. Response did not include email.");
                 return;
               }
-
+              
               emailSubject = data.subject;
               emailBody = data.body;
-
               appendMessage("📧 Subject: " + emailSubject + "\n\n" + emailBody);
-
               appendMessage("Would you like to send this email? (yes or no)");
               stage = 4;
             } else {
